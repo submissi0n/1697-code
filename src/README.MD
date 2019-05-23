@@ -1,0 +1,119 @@
+
+### Setup
+
+
+#### A. Environment Setup
+```
+conda env create -f ./requirements/conda_env.yaml
+```
+
+Before running any of the scripts. Make sure the environment is activated.
+```
+conda activate sign4bb-venv
+```
+
+To deactivate:
+```
+deactivate
+```
+
+- For the rest of this document, it is assumed that `pwd` is `src/`
+- The code has been run on a CUDA-enabled V100 GPU Linux machine. And we recommend the same.
+
+#### B.Pre-trained models & Datasets Setup
+
+```
+export PYTHONPATH=`pwd`
+python utils/download_models.py # downloads mnist and cifar10 models
+python utils/download_cifar10.py # download cifar10 dataset
+```
+MNIST dataset will be downloaded upon first run of the code. 
+For IMAGENET dataset, you'll need to download the imagenet validation set yourself. Please follow the instructions at `data/README.MD` to complete the setup.
+
+### Experiments
+
+#### A. To run black-box attack experiments:
+
+After modifying the attacks config files in `config-jsons` as desired; include config files of the considered attacks in `attacks/blackbox/run_attack.py`'s main function (line 40 in `run_attack.py`). Make sure that the `IS_DEBUG_MODE` is set to False. This Flag is used to replace the repsective model's loss with the synthetic concave one discussed in Appendix D in the supplement.
+
+```
+python ./attacks/blackbox/run_attack.py
+```
+
+If you run different experiments, you may want to change the `exp_id` string (line 38 in `run_attack.py`), this will be prepended the results files generated, so you won't overwrite results from different experiments
+
+#### B. To run Keep K experiment
+
+```
+python ./experiments/keep_k_sign_exp.py
+```
+
+#### C. To run the Challenges experiment (Section 5)
+
+checkout to the `challenges` branch
+
+```
+git checkout challenges
+git pull
+```
+
+We've put these on a branch since the same code and config files used in main experiments are modified to generate files in the format required by the challenges.
+
+#### D. To run the Adversarial Cone experiment (Section 6)
+
+```
+python ./experiments/adv_cone_exp.py
+```
+
+### Other Utilities
+
+To generate algorithms' hyperparameter tables (Appendix C):
+
+```
+# to export parameter table of algorithms
+json_files = get_jsonfiles('*bandit*')
+utils.latex_fcts.config_json_2_tbl_latex(json_files)
+```
+
+TeX files will be generated in `data/tex_tbls`
+
+---
+
+To view experiments based on Tensorboard:
+
+```
+tensorboard --logdir=../data/partial_derivatives_exp/
+```
+
+---
+
+To generate plots/tables from `attacks/blackbox/run_attack.py`
+
+`run_attack.py` will store results into both `h5` file (logging progress of the algorithms) as well as a json (logging the final status of the algorithms)
+
+To generate plots (e.g., Figures in Appdendix D) from data stored in the resulting `h5` file
+
+```
+utils.plt_fcts.plt_from_h5tbl(['../../data/blackbox_attack_exp/{H5_FILE_NAME}.h5'])
+```
+
+Plots will be generated in `data/blackbox_attack_exp/{H5_FILE_NAME}_plots`
+
+---
+
+To generate summary of attack latex tables (e.g., Tables in Appdendix D) from the resulting `json` file
+```
+utils.latex_fcts.res_json_2_tbl_latex('../../data/blackbox_attack_exp/{JSON_FILE_NAME}.json')
+```
+
+TeX files will be generated in `data/blacbox_attack_exp`
+
+---
+
+
+
+
+
+
+
+
